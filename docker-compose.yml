@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: pokedex-battle-server
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/pokebattle-server
+    env_file: ./.env
+    ports:
+      - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
+    stdin_open: true
+    tty: true
