@@ -16,6 +16,10 @@ const Pokemon = mongoose.Schema(
             type: Number,
             default: 1
         },
+        battles: [{     // TODO: Understand which is the correct language to property
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "PokemonBattlesHistory",
+        }],
     },
     { timestamps: true }
 );

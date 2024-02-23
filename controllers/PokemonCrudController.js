@@ -47,8 +47,8 @@ module.exports = {
             if (!pokemon) {
                 return res.status(404).json({ message: "Pokemon not found." });
             }
-            await Pokemon.deleteOne(pokemon);
-            return res.status(204);
+            await Pokemon.findByIdAndDelete(_.get(pokemon, "_id", "no-id"));
+            return res.sendStatus(204);
         } catch (err) {
             console.error(`Error while deleting pokemon: ${err.message}`);
             return res.status(500).json(err.message);
