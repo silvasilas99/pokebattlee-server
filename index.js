@@ -4,10 +4,13 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
+
 const pokemonRouter = require("./routes/PokemonRoutes");
+const swagger = require("./swagger");
 
 const app = express();
 dotenv.config();
+swagger.config(app);
 
 // MongoDB connector
 const {
