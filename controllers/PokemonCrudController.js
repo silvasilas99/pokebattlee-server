@@ -1,82 +1,149 @@
-const Pokemon = require('./../models/Pokemon');
+const _ = require("lodash");
+
+const PokemonCrudService = require("./../services/PokemonCrudService");
+
 const ALLOWED_POKEMON_TYPES = ["charizard", "mewtwo", "pikachu"];
+
+const checkPokemonTypeBeforeCreate = (type, res) => {
+    if (!ALLOWED_POKEMON_TYPES.includes(type)) {
+        console.warning(`Tryed to create a pokemon of type ${_.get(data, "tipo", "no-type")} and the opperation was interrupted.`)
+        return res.status(400).json({ message: "You can not create a pokemon with this type."});
+    }
+    return 0;
+}
+
+const checkIfPokemonExists = (pokemon, res) => {
+    if (!pokemon) {
+        console.warning(`Tryed to find a pokemon with ID ${_.get(pokemon, "id", "no-id")} that does not exist.`)
+        return res.status(404).json({ message: "Pokemon not found." });
+    }
+
+    return 0;
+}
 
 module.exports = {
     async createPokemon(req, res) {
+        const data = _.get(req, "body", {});
+
         try {
-            const { 
-                tipo,
-                treinador
-            } = req.body;
-            if (!ALLOWED_POKEMON_TYPES.includes(tipo)) {
-                return res.status(400).json({ message: "You can not create a pokemon with this type."});
+            const isPokemonOk = 
+                checkPokemonTypeBeforeCreate(
+                    _.get(data, "tipo", ""), 
+                    res     // Response instance
+                );
+            if (isPokemonOk !== 0) {
+                return;
             }
-            const newPokemon = await Pokemon.create({
-                tipo: tipo,
-                treinador: treinador
-            });
+
+            const newPokemon =
+                await PokemonCrudService.createAndReturnPokemon(req.body)
+
             return res.status(200).json(newPokemon);
         } catch (err) {
-            console.error(`Error while creating pokemon: ${err.message}`);
-            return res.status(500).json(err.message);
+            console.debug({
+                err,   // Instance of error
+                "request_data": data
+            });
+            return res
+                .status(_.get(err, "code", 500))
+                .json({
+                    message: _.get(err, "message", "Some unhandled error occured. Try again later, or contact the app administrator.")
+                });
         }
     },
 
     async updatePokemon(req, res) {
+        const pokemonId = _.get(req.params, "id", "no-id");
+        const data = _.get(req, "body", {});
+
         try {
-            const { id } = req.params;
-            let pokemon = await Pokemon.findById(id);
-            if (!pokemon) {
-                return res.status(404).json({ message: "Pokemon not found." });
+            let pokemon = 
+                await PokemonCrudService.findAndReturnPokemonById(pokemonId);
+
+            const isPokemonOk = checkIfPokemonExists(pokemon, res);
+            if (isPokemonOk !== 0) {
+                return;
             }
 
-            const { treinador } = req.body;
-            pokemon.treinador = treinador;
-            await pokemon.save();
+            await PokemonCrudService.updatePokemonCoach(pokemon, _.get(data, "treinador", ""))
 
             return res.sendStatus(204);
         } catch (err) {
-            console.error(`Error while updating pokemon: ${err.message}`);
-            return res.status(500).json(err.message);
+            console.debug({
+                err,   // Instance of error
+                "request_data": data,
+                "pokemon_id": pokemonId
+            });
+            return res
+                .status(_.get(err, "status-code", 500))
+                .json({
+                    message: _.get(err, "message", "Some unhandled error occured. Try again later, or contact the app administrator.")
+                });
         }
     },
 
     async deletePokemon(req, res) {
+        const pokemonId = _.get(req.params, "id", "no-id");
         try {
-            const pokemon = await Pokemon.findById(req.params.id);
-            if (!pokemon) {
-                return res.status(404).json({ message: "Pokemon not found." });
+            let pokemon = 
+                await PokemonCrudService.findAndReturnPokemonById(pokemonId);
+            const isPokemonOk = checkIfPokemonExists(pokemon, res);
+            if (isPokemonOk !== 0) {
+                return;
             }
-            await Pokemon.findByIdAndDelete(_.get(pokemon, "_id", "no-id"));
+
+            await PokemonCrudService.deletePokemonById(pokemonId);
+
             return res.sendStatus(204);
         } catch (err) {
-            console.error(`Error while deleting pokemon: ${err.message}`);
-            return res.status(500).json(err.message);
+            console.debug({
+                err,   // Instance of error
+                "pokemon_id": pokemonId
+            });
+            return res
+                .status(_.get(err, "status-code", 500))
+                .json({
+                    message: _.get(err, "message", "Some unhandled error occured. Try again later, or contact the app administrator.")
+                });
         }
     },
 
     async findPokemonById(req, res) {
+        const pokemonId = _.get(req.params, "id", "no-id");
         try {
-            const { id } = req.params;
-            const pokemon = await Pokemon.findById(id);
-            if (!pokemon) {
-                return res.status(404).json({ message: "Pokemon not found." });
+            let pokemon =
+                await PokemonCrudService.findAndReturnPokemonById(pokemonId);
+
+            const isPokemonOk = checkIfPokemonExists(pokemon, res);
+            if (isPokemonOk !== 0) {
+                return;
             }
-            res.status(200).json(pokemon);
+
+            return res.status(200).json(pokemon);
         } catch (err) {
-            console.error(`Error while finding pokemon by ID: ${err.message}`);
-            return res.status(500).json(err.message);
+            console.debug({
+                err,   // Instance of error
+                "pokemon_id": pokemonId
+            });
+            return res
+                .status(_.get(err, "status-code", 500))
+                .json({
+                    message: _.get(err, "message", "Some unhandled error occured. Try again later, or contact the app administrator.")
+                });
         }
     },
 
-
     async findAllPokemons(req, res) {
         try {
-            const pokemons = await Pokemon.find({});
+            const pokemons = 
+                await PokemonCrudService.findAndReturnAllPokemons();
             return res.status(200).json(pokemons);
         } catch (err) {
-            console.error(`Error while finding all pokemons: ${err.message}`);
-            return res.status(500).json(err.message);
+            return res
+                .status(_.get(err, "status-code", 500))
+                .json({
+                    message: _.get(err, "message", "Some unhandled error occured. Try again later, or contact the app administrator.")
+                });
         }
     }
 }
