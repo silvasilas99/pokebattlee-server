@@ -6,7 +6,7 @@ const ALLOWED_POKEMON_TYPES = ["charizard", "mewtwo", "pikachu"];
 
 const checkPokemonTypeBeforeCreate = (type, res) => {
     if (!ALLOWED_POKEMON_TYPES.includes(type)) {
-        console.warning(`Tryed to create a pokemon of type ${_.get(data, "tipo", "no-type")} and the opperation was interrupted.`)
+        console.log(`Tryed to create a pokemon of type ${type} and the opperation was interrupted.`)
         return res.status(400).json({ message: "You can not create a pokemon with this type."});
     }
     return 0;
@@ -14,7 +14,7 @@ const checkPokemonTypeBeforeCreate = (type, res) => {
 
 const checkIfPokemonExists = (pokemon, res) => {
     if (!pokemon) {
-        console.warning(`Tryed to find a pokemon with ID ${_.get(pokemon, "id", "no-id")} that does not exist.`)
+        console.log(`Tryed to find a pokemon with ID ${_.get(pokemon, "id", "no-id")} that does not exist.`)
         return res.status(404).json({ message: "Pokemon not found." });
     }
 

@@ -3,14 +3,20 @@ const _ = require("lodash")
 const PokemonActionsService = require("./../services/PokemonActionsService")
 const PokemonCrudService = require("./../services/PokemonCrudService");
 
-const checkIfPokemonExists = (pokemon, res) => {
+/**
+ * 
+ * @param {*} pokemonId 
+ * @param {*} res 
+ * @returns Pokemon model instance or null with direct response with code 404 to HTTP Client
+ */
+const tryToFindPokemonById = async (pokemonId, res) => {
+    let pokemon = await PokemonCrudService.findAndReturnPokemonById(pokemonId);
     if (!pokemon) {
-        const pokemonId = _.get(pokemon, "id", "no-id");
-        console.warning(`Tryed to find a pokemon with ID ${pokemonId} that does not exist.`)
-        return res.status(404).json({ message: `Pokemon with ID ${pokemonId} does not exist.` });
+        console.log(`Tryed to find a pokemon with ID ${pokemonId} that does not exist.`)
+        res.status(404).json({ message: `Pokemon with ID ${pokemonId} does not exist.` });
+        return null;
     }
-
-    return 0;
+    return pokemon;
 }
 
 module.exports = {
@@ -25,17 +31,12 @@ module.exports = {
             }
             
             // Validating if the IDs passed to battle is reffered to a existing Pokemon Object
-            let pokemonA = 
-                await PokemonCrudService.findAndReturnPokemonById(pokemonAId);
-            const isPokemonAOk = checkIfPokemonExists(pokemonA, res);
-            if (isPokemonAOk !== 0) {
+            const pokemonA = await tryToFindPokemonById(pokemonAId, res);
+            if (!pokemonA) {
                 return;
             }
-            // TODO: OPTIMIZE THE VERIFICATION
-            let pokemonB =
-                await PokemonCrudService.findAndReturnPokemonById(pokemonBId);
-            const isPokemonBOk = checkIfPokemonExists(pokemonB, res);
-            if (isPokemonBOk !== 0) {
+            let pokemonB = await tryToFindPokemonById(pokemonBId, res);
+            if (!pokemonB) {
                 return;
             }
 
