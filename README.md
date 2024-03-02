@@ -1,4 +1,6 @@
 # Servidor de batalhas Pokemon
+![image](https://github.com/silvasilas99/pokebattlee-server/assets/49960425/25f400db-78ab-4f13-a5ec-98985698c042)
+
     Visão Geral do Projeto: 
     
     Este projeto objetiva alcansar uma compreensão maior sobre organização de modulos Node.js, 
@@ -18,6 +20,9 @@
 
       Prepare o container da aplicação
         docker compose up --build  # Essa operação ira realizar um build do container de aplicação Node.Js, além de instalar as dependências necessárias e iniciar o serviço na porta escolhida
+      Ou se preferir, execute o Node.js diretamente pela sua máquina hospedeira (poupa recursos operacionais)
+        npm install
+        npm start
 
       Acesse o endereço http://localhost:8080/doc
         Após use o cliente do REST da SwaggerUI ou algum da sua preferência para realizar as operações desejadas
