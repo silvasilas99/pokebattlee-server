@@ -13,6 +13,12 @@ app.use(morgan("common"));
 app.use(cors());
 
 const pokemonRouter = require("./../routes/PokemonRoutes");
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");     // TODO: IMPLEMENT ACCESS CONTROL LIST TO SECURITY
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Max-Age: 86400");
+    next();
+});
 app.use("/pokemons", pokemonRouter);
 
 app.get("/", (req, res) => res.send("Hello World!"));
